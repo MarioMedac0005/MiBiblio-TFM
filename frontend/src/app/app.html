@@ -1,0 +1,15 @@
+<ng-container *ngIf="authService.isLoggedIn(); else loginLayout">
+  <app-sidebar />
+
+  <main class="pt-[73px] md:pt-0 md:ml-64 flex-1 min-h-dvh bg-background transition-all duration-300 ease-in-out w-full md:w-[calc(100%-16rem)]">
+    <router-outlet />
+  </main>
+</ng-container>
+
+<ng-template #loginLayout>
+  <main class="w-full min-h-dvh bg-background">
+    <router-outlet />
+  </main>
+</ng-template>
+
+<app-toast></app-toast>

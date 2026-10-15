@@ -1,0 +1,256 @@
+<div class="p-8 max-w-350 animate-fade-in">
+  <div class="flex items-center justify-between mb-7 flex-wrap gap-4">
+    <h1 class="text-2xl font-bold text-text-primary tracking-tight">Gestión de Préstamos</h1>
+    <div class="flex items-center gap-3">
+      <div
+        class="flex items-center gap-2.5 bg-surface border border-border rounded-lg px-4 py-2.5 w-full max-w-100 transition-all duration-200 focus-within:border-primary-400 focus-within:shadow-[0_0_0_3px_rgba(99,102,241,0.1)]">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+          class="w-4.5 h-4.5 text-text-muted shrink-0">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+        </svg>
+        <input [formControl]="searchPrestamo" type="text" placeholder="Buscar por usuario, libro..."
+          class="border-none outline-none w-full text-sm font-sans text-text-primary bg-transparent placeholder:text-text-muted" />
+      </div>
+      <button (click)="openModal()"
+        class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium bg-primary-600 text-white cursor-pointer border-none transition-all duration-200 hover:bg-primary-700 hover:-translate-y-px hover:shadow-lg whitespace-nowrap">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
+          class="w-4 h-4">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+        </svg>
+        Nuevo Préstamo
+      </button>
+    </div>
+  </div>
+
+  <div class="bg-surface rounded-2xl border border-border overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full border-collapse">
+        <thead class="bg-background">
+          <tr>
+            <th
+              class="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-text-secondary border-b border-border">
+              Usuario</th>
+            <th
+              class="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-text-secondary border-b border-border">
+              Libro</th>
+            <th
+              class="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-text-secondary border-b border-border">
+              Fecha préstamo</th>
+            <th
+              class="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-text-secondary border-b border-border">
+              Fecha devolución</th>
+            <th
+              class="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-text-secondary border-b border-border">
+              Estado</th>
+            <th
+              class="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-text-secondary border-b border-border">
+              Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (prestamos.length > 0) {
+          @for (p of prestamos; track p.id) {
+          <tr class="transition-colors duration-150 hover:bg-primary-50 border-b border-border">
+            <td class="px-5 py-4 text-sm text-text-primary">
+              <div class="flex items-center gap-3">
+                <div
+                  class="w-9 h-9 rounded-full bg-linear-to-br from-primary-400 to-primary-600 text-white flex items-center justify-center text-xs font-semibold shrink-0">
+                  CL</div>
+                <span>{{ p.usuarioNombre }}</span>
+              </div>
+            </td>
+            <td class="px-5 py-4 text-sm text-text-primary font-medium">{{ p.libroTitulo }}</td>
+            <td class="px-5 py-4 text-sm text-text-secondary">{{ p.fechaPrestamo | date:'dd/MM/yyyy' }}</td>
+            <td class="px-5 py-4 text-sm text-text-secondary">{{ p.fechaDevolucion | date:'dd/MM/yyyy' }}</td>
+            <td class="px-5 py-4 text-sm"><span
+                class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary-50 text-primary-600">{{
+                p.devuelto ? 'Devuelto' : 'Pendiente' }}</span>
+            </td>
+            <td class="px-5 py-4 text-sm">
+              <div class="flex items-center gap-1">
+                <button *ngIf="!p.devuelto"
+                  (click)="openDevolverModal(p.id)"
+                  class="p-2 rounded-lg bg-transparent border-none cursor-pointer text-text-secondary transition-all duration-200 hover:bg-success-50 hover:text-success-600 inline-flex items-center justify-center"
+                  title="Marcar como devuelto">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                    stroke="currentColor" class="w-4.5 h-4.5">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M4.5 12.75l6 6 9-13.5" />
+                  </svg>
+                </button>
+                <button *ngIf="!p.devuelto && p.renovaciones < 2"
+                  (click)="renovarPrestamo(p)"
+                  class="p-2 rounded-lg bg-transparent border-none cursor-pointer text-text-secondary transition-all duration-200 hover:bg-info-50 hover:text-info-600 inline-flex items-center justify-center"
+                  title="Renovar">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4.5 h-4.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                  </svg>
+                </button>
+                <button (click)="openDeleteModal(p.id)"
+                  class="p-2 rounded-lg bg-transparent border-none cursor-pointer text-text-secondary transition-all duration-200 hover:bg-danger-50 hover:text-danger-600 inline-flex items-center justify-center"
+                  title="Eliminar">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                    stroke="currentColor" class="w-4.5 h-4.5">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                  </svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+          }
+          }
+
+        </tbody>
+      </table>
+    </div>
+
+    <div
+      class="px-5 py-4 border-t border-border bg-background flex flex-col sm:flex-row items-center justify-between gap-4">
+      <span class="text-sm text-text-secondary">
+        Mostrando {{ totalElements > 0 ? currentPage * pageSize + 1 : 0 }} a {{ Math.min((currentPage + 1) * pageSize,
+        totalElements) }} de {{ totalElements }} resultados
+      </span>
+      <div class="flex items-center gap-2">
+        <button [disabled]="currentPage === 0" (click)="previousPage()"
+          class="px-3 py-1.5 text-sm font-medium border border-border rounded-lg bg-surface text-text-primary hover:bg-primary-50 hover:text-primary-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer">
+          Anterior
+        </button>
+        <span class="text-sm text-text-primary px-3 font-medium">
+          Página {{ totalPages > 0 ? currentPage + 1 : 0 }} de {{ totalPages }}
+        </span>
+        <button [disabled]="currentPage >= totalPages - 1" (click)="nextPage()"
+          class="px-3 py-1.5 text-sm font-medium border border-border rounded-lg bg-surface text-text-primary hover:bg-primary-50 hover:text-primary-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer">
+          Siguiente
+        </button>
+      </div>
+    </div>
+  </div>
+
+  @if (isModalOpen()) {
+  <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-surface rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-fade-in border border-border">
+      <div class="px-6 py-4 border-b border-border flex justify-between items-center bg-background">
+        <h2 class="text-xl font-bold text-text-primary">Nuevo Préstamo</h2>
+        <button (click)="closeModal()"
+          class="text-text-muted hover:text-text-primary cursor-pointer border-none bg-transparent">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      <form [formGroup]="prestamoForm" (ngSubmit)="onSubmit()" class="px-6 py-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-text-secondary mb-1">Usuario</label>
+            <select formControlName="usuarioId"
+              [class.border-red-500]="prestamoForm.get('usuarioId')?.invalid && prestamoForm.get('usuarioId')?.touched"
+              class="w-full border border-border rounded-lg px-3 py-2 text-sm bg-background text-text-primary focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 appearance-none">
+              <option value="" disabled selected>Seleccione un usuario...</option>
+              @for (u of usuarios; track u.id) {
+                <option [value]="u.id">{{ u.nombre }} {{ u.apellidos }} ({{ u.email }})</option>
+              }
+            </select>
+            <p *ngIf="prestamoForm.get('usuarioId')?.invalid && prestamoForm.get('usuarioId')?.touched" class="text-red-500 text-xs mt-1">El usuario es requerido</p>
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-text-secondary mb-1">Libro</label>
+            <select formControlName="libroId"
+              [class.border-red-500]="prestamoForm.get('libroId')?.invalid && prestamoForm.get('libroId')?.touched"
+              class="w-full border border-border rounded-lg px-3 py-2 text-sm bg-background text-text-primary focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 appearance-none">
+              <option value="" disabled selected>Seleccione un libro...</option>
+              @for (l of libros; track l.id) {
+                <option [value]="l.id">{{ l.titulo }} - {{ l.autor }}</option>
+              }
+            </select>
+            <p *ngIf="prestamoForm.get('libroId')?.invalid && prestamoForm.get('libroId')?.touched" class="text-red-500 text-xs mt-1">El libro es requerido</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-text-secondary mb-1">Fecha de Préstamo</label>
+            <input type="date" formControlName="fechaPrestamo"
+              [class.border-red-500]="prestamoForm.get('fechaPrestamo')?.invalid && prestamoForm.get('fechaPrestamo')?.touched"
+              class="w-full border border-border rounded-lg px-3 py-2 text-sm bg-background text-text-primary focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500" />
+            <p *ngIf="prestamoForm.get('fechaPrestamo')?.invalid && prestamoForm.get('fechaPrestamo')?.touched" class="text-red-500 text-xs mt-1">Requerida</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-text-secondary mb-1">Fecha de Devolución</label>
+            <input type="date" formControlName="fechaDevolucion"
+              [class.border-red-500]="prestamoForm.get('fechaDevolucion')?.invalid && prestamoForm.get('fechaDevolucion')?.touched"
+              class="w-full border border-border rounded-lg px-3 py-2 text-sm bg-background text-text-primary focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500" />
+            <p *ngIf="prestamoForm.get('fechaDevolucion')?.invalid && prestamoForm.get('fechaDevolucion')?.touched" class="text-red-500 text-xs mt-1">Requerida</p>
+          </div>
+        </div>
+        <div class="mt-6 flex justify-end gap-3">
+          <button type="button" (click)="closeModal()"
+            class="px-4 py-2 text-sm font-medium text-text-secondary bg-background border border-border rounded-lg cursor-pointer hover:bg-surface transition-colors">Cancelar</button>
+          <button type="submit" [disabled]="prestamoForm.invalid"
+            class="px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg cursor-pointer hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors border-none">Crear
+            Préstamo</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  }
+
+  @if (isDeleteModalOpen()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+
+    <div class="w-full max-w-md rounded-2xl bg-surface border border-border shadow-2xl">
+
+      <div class="flex justify-between items-center px-5 py-4 border-b border-border">
+        <h3 class="text-lg font-semibold text-text-primary">
+          Confirmar eliminación
+        </h3>
+
+        <button class="cursor-pointer" (click)="closeDeleteModal()">
+          ✕
+        </button>
+      </div>
+
+      <div class="px-5 py-4 text-sm text-text-secondary">
+        ¿Seguro que quieres eliminar este préstamo?
+      </div>
+
+      <div class="flex justify-end gap-2 px-4 py-4 border-t border-border">
+        <button class="px-4 py-2 rounded-lg border border-border cursor-pointer text-sm" (click)="closeDeleteModal()">
+          Cancelar
+        </button>
+
+        <button (click)="deletePrestamo()" class="px-4 py-2 rounded-lg bg-red-600 text-white cursor-pointer text-sm">
+          Eliminar
+        </button>
+      </div>
+
+    </div>
+  </div>
+  }
+
+  @if (isDevolverModalOpen()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+
+    <div class="w-full max-w-md rounded-2xl bg-surface border border-border shadow-2xl">
+      <div class="flex justify-between items-center px-5 py-4 border-b border-border">
+        <h3 class="text-lg font-semibold text-text-primary">Devolver Libro</h3>
+        <button class="cursor-pointer text-text-muted hover:text-text-primary border-none bg-transparent" (click)="closeDevolverModal()">✕</button>
+      </div>
+
+      <div class="px-5 py-4">
+        <label class="block text-sm font-medium text-text-secondary mb-1">Estado Físico al Devolver</label>
+        <select [formControl]="estadoDevolucion" class="w-full border border-border rounded-lg px-3 py-2 text-sm bg-background text-text-primary focus:outline-none focus:border-primary-500 appearance-none">
+          <option value="Perfecto">Perfecto</option>
+          <option value="Bueno">Bueno</option>
+          <option value="Deteriorado">Deteriorado</option>
+          <option value="Perdido">Perdido</option>
+        </select>
+      </div>
+
+      <div class="flex justify-end gap-2 px-4 py-4 border-t border-border">
+        <button class="px-4 py-2 rounded-lg border border-border cursor-pointer text-sm" (click)="closeDevolverModal()">Cancelar</button>
+        <button (click)="confirmarDevolucion()" class="px-4 py-2 rounded-lg bg-success-600 text-white cursor-pointer text-sm">Devolver</button>
+      </div>
+    </div>
+  </div>
+  }
+
+</div>

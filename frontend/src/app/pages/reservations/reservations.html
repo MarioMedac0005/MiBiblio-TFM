@@ -1,0 +1,190 @@
+<div class="p-6 md:p-8 max-w-[1600px] mx-auto animate-fade-in pb-24 md:pb-8">
+    <div class="flex flex-col gap-6 mb-8">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 class="text-3xl md:text-4xl font-bold text-text-primary tracking-tight">Lista de Espera</h1>
+          <p class="text-text-secondary mt-2 text-sm md:text-base">Gestiona las reservas de libros sin stock</p>
+        </div>
+      </div>
+    </div>
+  
+    <div class="bg-surface rounded-2xl border border-border overflow-hidden shadow-sm">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="border-b border-border bg-background/50">
+              <th class="py-4 px-6 text-xs font-semibold text-text-secondary uppercase tracking-wider">ID</th>
+              <th class="py-4 px-6 text-xs font-semibold text-text-secondary uppercase tracking-wider">Libro</th>
+              <th class="py-4 px-6 text-xs font-semibold text-text-secondary uppercase tracking-wider">Usuario</th>
+              <th class="py-4 px-6 text-xs font-semibold text-text-secondary uppercase tracking-wider">Fecha Reserva</th>
+              <th class="py-4 px-6 text-xs font-semibold text-text-secondary uppercase tracking-wider">Estado</th>
+              <th class="py-4 px-6 text-xs font-semibold text-text-secondary uppercase tracking-wider text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-border">
+            @for (reserva of reservas; track reserva.id) {
+              <tr class="hover:bg-background/50 transition-colors group">
+                <td class="py-4 px-6 text-sm text-text-secondary">#{{ reserva.id }}</td>
+                <td class="py-4 px-6">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-14 bg-background border border-border rounded flex-shrink-0 flex items-center justify-center overflow-hidden">
+                      <svg class="w-5 h-5 text-text-secondary/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p class="text-sm font-medium text-text-primary group-hover:text-primary-500 transition-colors line-clamp-1">{{ reserva.libro.titulo }}</p>
+                      <p class="text-xs text-text-secondary mt-1">Disp: {{ reserva.libro.ejemplaresDisponibles }}</p>
+                    </div>
+                  </div>
+                </td>
+                <td class="py-4 px-6">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-primary-500/10 text-primary-500 flex items-center justify-center text-sm font-bold border border-primary-500/20">
+                      {{ reserva.usuario.nombre.charAt(0) }}
+                    </div>
+                    <div>
+                      <p class="text-sm font-medium text-text-primary">{{ reserva.usuario.nombre }} {{ reserva.usuario.apellidos }}</p>
+                      <p class="text-xs text-text-secondary mt-0.5">{{ reserva.usuario.email }}</p>
+                    </div>
+                  </div>
+                </td>
+                <td class="py-4 px-6 text-sm text-text-secondary">
+                  {{ reserva.fechaReserva | date:'dd/MM/yyyy' }}
+                </td>
+                <td class="py-4 px-6">
+                  <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border"
+                    [ngClass]="{
+                      'bg-green-500/10 text-green-500 border-green-500/20': reserva.activa,
+                      'bg-gray-500/10 text-gray-500 border-gray-500/20': !reserva.activa
+                    }">
+                    <span class="w-1.5 h-1.5 rounded-full"
+                      [ngClass]="{
+                        'bg-green-500': reserva.activa,
+                        'bg-gray-500': !reserva.activa
+                      }"></span>
+                    {{ reserva.activa ? 'En Cola' : 'Completada' }}
+                  </span>
+                </td>
+                <td class="py-4 px-6 text-right">
+                  @if (reserva.activa) {
+                    <button 
+                      (click)="openFulfillModal(reserva)"
+                      title="Crear Préstamo inmediato"
+                      class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary-600 bg-primary-50 hover:bg-primary-100 hover:text-primary-700 rounded-lg transition-colors border border-primary-200 cursor-pointer">
+                      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                      </svg>
+                      <span>Crear Préstamo</span>
+                    </button>
+                  }
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="6" class="py-12 text-center text-text-secondary">
+                  <div class="flex flex-col items-center gap-3">
+                    <svg class="w-12 h-12 text-border" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <p class="text-sm">No hay reservas registradas en el sistema.</p>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+  
+      <div *ngIf="totalPages > 1" class="flex items-center justify-between px-6 py-4 border-t border-border bg-background/30">
+        <p class="text-sm text-text-secondary">
+          Mostrando <span class="font-medium text-text-primary">{{ currentPage * pageSize + 1 }}</span> a 
+          <span class="font-medium text-text-primary">{{ Math.min((currentPage + 1) * pageSize, totalElements) }}</span> de 
+          <span class="font-medium text-text-primary">{{ totalElements }}</span> reservas
+        </p>
+        
+        <div class="flex items-center gap-2">
+          <button 
+            [disabled]="currentPage === 0"
+            (click)="previousPage()"
+            class="p-2 rounded-lg border border-border text-text-secondary hover:bg-background disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          
+          <div class="flex items-center gap-1">
+            @for (page of [].constructor(totalPages); track $index) {
+              <button 
+                (click)="goToPage($index)"
+                class="w-8 h-8 rounded-lg text-sm font-medium transition-colors"
+                [ngClass]="currentPage === $index ? 'bg-primary-500 text-white' : 'text-text-secondary hover:bg-background border border-transparent hover:border-border'">
+                {{ $index + 1 }}
+              </button>
+            }
+          </div>
+  
+          <button 
+            [disabled]="currentPage >= totalPages - 1"
+            (click)="nextPage()"
+            class="p-2 rounded-lg border border-border text-text-secondary hover:bg-background disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+  @if (isFulfillModalOpen()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+    <div class="w-full max-w-md rounded-2xl bg-surface border border-border shadow-2xl overflow-hidden">
+      
+      <div class="flex justify-between items-center px-6 py-4 border-b border-border">
+        <h3 class="text-lg font-semibold text-text-primary flex items-center gap-2">
+          <svg class="w-5 h-5 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+          </svg>
+          Confirmar Préstamo
+        </h3>
+        <button class="cursor-pointer text-text-muted hover:text-text-primary border-none bg-transparent text-xl leading-none" (click)="closeFulfillModal()">✕</button>
+      </div>
+
+      <div class="p-6 space-y-4">
+        <p class="text-sm text-text-secondary">
+          ¿Deseas formalizar el préstamo automático para esta reserva?
+        </p>
+
+        <div class="bg-background rounded-xl p-4 border border-border space-y-2.5">
+          <div class="flex justify-between text-sm">
+            <span class="text-text-secondary">Libro:</span>
+            <span class="font-semibold text-text-primary text-right">{{ selectedReserva?.libro?.titulo }}</span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span class="text-text-secondary">Usuario:</span>
+            <span class="font-semibold text-text-primary">{{ selectedReserva?.usuario?.nombre }} {{ selectedReserva?.usuario?.apellidos }}</span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span class="text-text-secondary">Plazo asignado:</span>
+            <span class="font-medium text-primary-600">7 días naturales</span>
+          </div>
+        </div>
+
+        <p class="text-xs text-text-muted leading-relaxed">
+          * El backend descontará 1 ejemplar de stock, cerrará la reserva y activará el préstamo inmediatamente.
+        </p>
+      </div>
+
+      <div class="flex justify-end gap-3 px-6 py-4 border-t border-border bg-background/50">
+        <button class="px-4 py-2 rounded-lg border border-border cursor-pointer text-sm font-medium text-text-secondary hover:bg-surface transition-colors" (click)="closeFulfillModal()">
+          Cancelar
+        </button>
+        <button (click)="confirmarCumplirReserva()" class="px-4 py-2 rounded-lg bg-primary-600 hover:bg-primary-700 text-white cursor-pointer text-sm font-medium transition-colors border-none shadow-sm">
+          Crear Préstamo
+        </button>
+      </div>
+
+    </div>
+  </div>
+  }
+</div>
